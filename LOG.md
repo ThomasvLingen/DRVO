@@ -12,7 +12,7 @@ alias mafn_kernel_msg='watch "dmesg | tail -25"'
 ```
 
 
-## Chapter 2
+## Chapter 2 (LAB 2.8)
 * Download sample makefile and edit it to my liking
 
 Next I made a sample hello_world driver which printks hello and goodbye when
@@ -20,7 +20,7 @@ it inits and exits respectively. Next up I built it with my Makefile, if this
 sample driver succeeds, I can confirm that my VM setup is working and good to go.
 
 The results were exciting, building the hello_world_driver succeeded on first
-try, and by dogin `insmod hello_world_driver.ko` and `rmmod hello_world_driver.ko`
+try, and by doing `insmod hello_world_driver.ko` and `rmmod hello_world_driver.ko`
 resulted in the following output from `dmesg | tail`:
 
 ```
