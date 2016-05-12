@@ -30,3 +30,9 @@
 
 # Debug files
 *.dSYM/
+
+# Documents folder
+documents/
+
+# LOG html
+*.html
