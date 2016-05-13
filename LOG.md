@@ -124,3 +124,50 @@ rmmod: ERROR: could not remove module init_only_driver.ko: Device or resource bu
 ```  
 **exit_only_driver**:  
 This driver can also be loaded and unloaded as per usual.
+
+## Chapter 4
+### Lab 1: Improving the basic character driver
+I actually wrote my own character driver with a read and write operation, since
+I thought that'd be more fun than to use the one that is provided.  
+The smallest functional character driver I could write seemed to work, with printk printing the following things:  
+* `cat /dev/character_driver`:
+```
+[ 7436.108630] char driver is opening!
+[ 7436.108644] char driver READ is not implemented
+[ 7436.108648] char driver is closing!
+```
+* `echo "foo" > /dev/character_driver`:
+```
+[ 7493.768581] char driver is opening!
+[ 7493.768602] char driver WRITE is not implemented
+[ 7493.768606] char driver is closing!
+```
+
+Note that I also added some Makefile stuff for automatically making and removing a device node, since this was a pain to do by hand. My Makefile now looked like the following:
+```makefile
+DRIVER_NAME = char_driver
+
+obj-m += $(DRIVER_NAME).o
+
+KDIR = /lib/modules/$(shell uname -r)/build
+PWD  = $(shell pwd)
+MAKE = /usr/bin/make
+KMAKE = $(MAKE) -C $(KDIR) M=$(PWD)
+
+default:
+	$(KMAKE) modules
+
+insert:
+	sudo insmod $(DRIVER_NAME).ko
+	sudo mknod -m 666 /dev/$(DRIVER_NAME) c 700 0
+
+remove:
+	sudo rmmod $(DRIVER_NAME)
+	sudo rm -rf /dev/$(DRIVER_NAME)
+
+clean:
+	$(KMAKE) clean
+
+#command definitions
+.PHONY: all clean insert remove
+```
