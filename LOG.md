@@ -171,3 +171,5 @@ clean:
 #command definitions
 .PHONY: all clean insert remove
 ```
+
+Next up I wanted to test the driver I made with a program instead of a terminal, so I wrote up a python unittest for this using nosetests. This test does however assume that the driver is loaded and that a device node is instantiated. These can be run with `nosetests`.
