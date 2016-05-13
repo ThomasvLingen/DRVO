@@ -78,3 +78,28 @@ clean:
 #command definitions
 .PHONY: all clean insert remove
 ```
+
+## Chapter 3
+### Lab 1
+Next up was writing a driver which takes an integer parameter. This seemed to work. Doing the following:
+```
+mafn@0xFF /media/mafn/Driver/chapter3 $ sudo insmod counter_driver.ko param_int=10
+mafn@0xFF /media/mafn/Driver/chapter3 $ make remove
+sudo rmmod counter_driver
+mafn@0xFF /media/mafn/Driver/chapter3 $
+```
+
+Yielded this as output:
+```
+[ 7398.353619] Int parameter driver is initialising
+[ 7398.353623] Value of the parameter during init = 10
+[ 7518.907365] Value of the parameter during exit = 10
+[ 7518.907369] Int parameter driver is exitting
+```
+
+I however couldn't find the parameter in /sys/modules/<driver_name>  
+Reason: didn't pass the right permission options in the `module_param` call
+
+And thus I modified `module_param(param_int, int, 0);` to become `module_param(param_int, int, 0755);`  
+
+Now, I could actually see the module param in the correct folder and read it with `cat`.
