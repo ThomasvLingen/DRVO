@@ -103,3 +103,24 @@ Reason: didn't pass the right permission options in the `module_param` call
 And thus I modified `module_param(param_int, int, 0);` to become `module_param(param_int, int, 0755);`  
 
 Now, I could actually see the module param in the correct folder and read it with `cat`.
+
+### Lab 2
+For lab 2 I made 3 separate drivers:
+* complete_driver (init & exit)
+* init_only_driver (init)
+* exit_only_driver (exit)
+
+The behaviour for these drivers is as follows:  
+**complete_driver**:  
+Behaviour is as intended, the driver can be loaded and unloaded as per usual.  
+**init_only_driver**:  
+This driver can be loaded, but no unloaded. See the following output
+```
+mafn@0xFF /media/mafn/Driver/chapter3/lab2 $ sudo insmod init_only_driver.ko
+[  858.848913] init only driver is initialising
+mafn@0xFF /media/mafn/Driver/chapter3/lab2 $ sudo rmmod init_only_driver.ko
+rmmod: ERROR: ../libkmod/libkmod-module.c:769 kmod_module_remove_module() could not remove 'init_only_driver': Device or resource busy
+rmmod: ERROR: could not remove module init_only_driver.ko: Device or resource busy
+```  
+**exit_only_driver**:  
+This driver can also be loaded and unloaded as per usual.
