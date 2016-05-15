@@ -126,7 +126,7 @@ rmmod: ERROR: could not remove module init_only_driver.ko: Device or resource bu
 This driver can also be loaded and unloaded as per usual.
 
 ## Chapter 4
-### Lab 1: Improving the basic character driver
+### Prework: write my own character driver
 I actually wrote my own character driver with a read and write operation, since
 I thought that'd be more fun than to use the one that is provided.  
 The smallest functional character driver I could write seemed to work, with printk printing the following things:  
@@ -173,3 +173,34 @@ clean:
 ```
 
 Next up I wanted to test the driver I made with a program instead of a terminal, so I wrote up a python unittest for this using nosetests. This test does however assume that the driver is loaded and that a device node is instantiated. These can be run with `nosetests`.
+
+### Lab1:
+I took the character driver I made, and implemented the behaviour specified in lab 1.
+Doing the following:
+```
+mafn@0xFF /media/mafn/Driver/chapter4/lab1 $ make insert
+sudo insmod lab1_driver.ko
+sudo mknod -m 666 /dev/lab1_driver c 700 0
+mafn@0xFF /media/mafn/Driver/chapter4/lab1 $ cat /dev/lab1_driver
+mafn@0xFF /media/mafn/Driver/chapter4/lab1 $ cat /dev/lab1_driver
+mafn@0xFF /media/mafn/Driver/chapter4/lab1 $ cat /dev/lab1_driver
+```
+Yielded this:
+```
+[ 1192.640413] lab1_driver is initialising
+[ 1192.640422] lab1_driver is initialised
+[ 1204.942842] lab1_driver is opening [0]!
+[ 1204.942848] major/minor: 700/0
+[ 1204.942866] lab1_driver READ is not implemented
+[ 1204.942875] lab1_driver is closing!
+[ 1209.257422] lab1_driver is opening [1]!
+[ 1209.257428] major/minor: 700/0
+[ 1209.257445] lab1_driver READ is not implemented
+[ 1209.257451] lab1_driver is closing!
+[ 1210.632327] lab1_driver is opening [2]!
+[ 1210.632334] major/minor: 700/0
+[ 1210.632348] lab1_driver READ is not implemented
+[ 1210.632354] lab1_driver is closing!
+```
+
+I also wrote a python test to accompany this.
