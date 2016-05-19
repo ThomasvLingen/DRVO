@@ -242,3 +242,25 @@ insert:
 	sudo insmod $(DRIVER_NAME).ko
 	sudo mknod -m 666 /dev/$(DRIVER_NAME) c 700 0
 ```
+
+### Lab 5:
+To do this, I continued working where the basic character device left off.
+This ended up being fairly easy to implement, needing only to add the following:
+As a new static variable:
+```c
+static struct class* driver_class;
+```
+In the init function:
+```c
+// Make a device node using udev
+driver_class = class_create(THIS_MODULE, "lab5_driver_class");
+device_create(driver_class, NULL, major_numbers, "%s", DRIVER_NAME);
+```
+And in the exit function:
+```c
+// Remove the device node
+device_destroy(driver_class, major_numbers);
+class_destroy(driver_class);
+```
+
+Now when I `insmod` the driver, the device node is automagically created by udev. Sweet!
