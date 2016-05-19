@@ -204,3 +204,41 @@ Yielded this:
 ```
 
 I also wrote a python test to accompany this.
+
+### Lab2:
+This was easy to implement, as all I had to do was move ramdisk allocation from
+the init and exit to the open and close respectively.
+
+This was difficult to test since I could not open a file for both reading and
+writing at the same time without seek being implemented.
+
+### Lab3:
+This was a bit tricky, since it was pretty hard to find out how to actually correctly implement this.
+Luckily, I could find some lseek specifications online, and was able to implement it with the following:
+
+```c
+static loff_t driver_lseek(struct file* file, loff_t offset, int whence) {
+    if (whence == SEEK_SET) {
+        pr_info("SETTING POS TO %d\n", offset);
+        file->f_pos = offset;
+    } else if (whence == SEEK_CUR) {
+        pr_info("SETTING POS TO CURRENT + %d\n", offset);
+        file->f_pos += offset;
+    } else if (whence == SEEK_END) {
+        pr_info("SETTING POS TO END + %d\n", offset);
+        file->f_pos = file->f_mapping->host->i_size;
+    }
+
+    return offset;
+}
+```
+
+### Lab 4:
+I had actually already done this in my makefile, since doing this manually
+annoyed me to no end.  
+Here is the makefile rule for it:  
+```makefile
+insert:
+	sudo insmod $(DRIVER_NAME).ko
+	sudo mknod -m 666 /dev/$(DRIVER_NAME) c 700 0
+```
