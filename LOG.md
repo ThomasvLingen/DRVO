@@ -264,3 +264,87 @@ class_destroy(driver_class);
 ```
 
 Now when I `insmod` the driver, the device node is automagically created by udev. Sweet!
+
+## Chapter 6
+### Lab 1
+`strace ls 2>&1 | less`  
+I was surprised by how many system calls a simple `ls` of a directory makes!
+
+## Chapter 8
+### Lab 1
+The goal here is to make a simple driver which shares its IRQ with my network
+card. So the first step was figuring out which interrupt number corresponds to
+some sort of network connection. doing `cat /proc/devices` revealed the following:
+```
+CPU0       
+0:         36    XT-PIC  timer
+1:       1767    XT-PIC  i8042
+2:          0    XT-PIC  cascade
+8:          0    XT-PIC  rtc0
+9:      10497    XT-PIC  acpi, vboxguest
+10:      12108    XT-PIC  eth0
+11:      29573    XT-PIC  ohci_hcd:usb1, 0000:00:0d.0, snd_intel8x0
+12:       3416    XT-PIC  i8042
+14:          0    XT-PIC  ata_piix
+15:       7005    XT-PIC  ata_piix
+NMI:          0   Non-maskable interrupts
+LOC:    1527532   Local timer interrupts
+SPU:          0   Spurious interrupts
+PMI:          0   Performance monitoring interrupts
+IWI:          2   IRQ work interrupts
+RTR:          0   APIC ICR read retries
+RES:          0   Rescheduling interrupts
+CAL:          0   Function call interrupts
+TLB:          0   TLB shootdowns
+TRM:          0   Thermal event interrupts
+THR:          0   Threshold APIC interrupts
+MCE:          0   Machine check exceptions
+MCP:         24   Machine check polls
+HYP:          0   Hypervisor callback interrupts
+ERR:          0
+MIS:          0
+```
+
+It was not difficult to work out that eth0 (ethernet) had something to do with
+my network connection. An interrupt seemed to be generated once every 2 seconds.
+But with stimulating using `ping 8.8.8.8` far more were generated.
+
+Next up was writing a driver which made an interrupt handler, registered it for
+the eth0 interrupt and counts how many times it's called. The result can be found
+in `chapter8/lab1`.
+
+For some reason I couldn't register the interrupt handler. I fiddled around a bit
+and this was apparently because I used `NULL` for the dev_id. I instead made a
+`static int` with the value `0` and used that instead. This worked.
+
+The result was the following:
+```
+[10530.315278] lab1_driver is initialised
+[10532.146353] ISR[10] called 1 times!
+[10534.150441] ISR[10] called 2 times!
+[10536.154402] ISR[10] called 3 times!
+[10538.159873] ISR[10] called 4 times!
+[10540.162390] ISR[10] called 5 times!
+[10542.166435] ISR[10] called 6 times!
+[10544.170456] ISR[10] called 7 times!
+[10546.174464] ISR[10] called 8 times!
+[10548.178511] ISR[10] called 9 times!
+[10550.182391] ISR[10] called 10 times!
+[10552.186228] ISR[10] called 11 times!
+[10554.190606] ISR[10] called 12 times!
+[10556.194404] ISR[10] called 13 times!
+[10558.198147] ISR[10] called 14 times!
+[10560.202182] ISR[10] called 15 times!
+[10562.206388] ISR[10] called 16 times!
+[10564.210384] ISR[10] called 17 times!
+[10566.214246] ISR[10] called 18 times!
+[10568.218398] ISR[10] called 19 times!
+[10570.222413] ISR[10] called 20 times!
+[10572.226467] ISR[10] called 21 times!
+[10574.236176] ISR[10] called 22 times!
+[10575.036398] lab1_driver is exiting
+[10575.036478] lab1_driver has exited
+```
+
+I still have no idea what is polling every 2 seconds (and triggers the interrupt
+in the process) but this at least seemed to work nicely!
