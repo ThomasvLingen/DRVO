@@ -348,3 +348,49 @@ The result was the following:
 
 I still have no idea what is polling every 2 seconds (and triggers the interrupt
 in the process) but this at least seemed to work nicely!
+
+### Lab 2
+Next up was writing a driver which tries to listen to all possible interrupts
+and keeps track of how many calls each interrupt has had. Hence I wrote a driver
+for this, without the read functionality. (`chapter8/lab2`) Instead I let it print the results upon
+`driver_exit`, so that I could contain functionality withing the driver This
+seemed to work pretty well:
+
+```
+[18127.125738] lab2_driver is initialising
+[18127.125746] genirq: Flags mismatch irq 0. 00000080 (interrupt_tracker) vs. 00015a00 (timer)
+[18127.125753] Listening for IRQ[1]
+[18127.125755] genirq: Flags mismatch irq 2. 00000080 (interrupt_tracker) vs. 00010000 (cascade)
+[18127.125763] Listening for IRQ[3]
+[18127.125767] Listening for IRQ[4]
+[18127.125771] Listening for IRQ[5]
+[18127.125776] Listening for IRQ[6]
+[18127.125780] Listening for IRQ[7]
+[18127.125782] genirq: Flags mismatch irq 8. 00000080 (interrupt_tracker) vs. 00000000 (rtc0)
+[18127.125785] Listening for IRQ[9]
+[18127.125788] Listening for IRQ[10]
+[18127.125791] Listening for IRQ[11]
+[18127.125793] Listening for IRQ[12]
+[18127.125798] Listening for IRQ[13]
+[18127.125800] Listening for IRQ[14]
+[18127.125802] Listening for IRQ[15]
+[18127.128479] lab2_driver is initialised
+[18226.969731] lab2_driver is exiting
+[18226.971891] IRQ[1] had 28 calls
+[18226.971898] IRQ[3] had 0 calls
+[18226.971920] IRQ[4] had 0 calls
+[18226.971924] IRQ[5] had 0 calls
+[18226.971928] IRQ[6] had 0 calls
+[18226.971932] IRQ[7] had 0 calls
+[18226.971935] IRQ[9] had 96 calls
+[18226.971938] IRQ[10] had 50 calls
+[18226.971940] IRQ[11] had 20 calls
+[18226.971943] IRQ[12] had 16 calls
+[18226.971944] IRQ[13] had 0 calls
+[18226.971948] IRQ[14] had 0 calls
+[18226.971950] IRQ[15] had 96 calls
+[18226.971952] lab2_driver has exited
+```
+
+I would assume that the flag mismatches are because the interrupts don't want
+to be shared.
