@@ -419,3 +419,72 @@ the following happened upon loading the main driver.
 ```
 
 Sources can be found in `chapter9/lab1`.
+
+### Lab 2
+Next up was duplicating the honk driver.  
+First of all, during compilation the following warning arose:  
+```
+make[1]: Entering directory `/usr/src/linux-headers-3.19.0-32-generic'
+  CC [M]  /media/mafn/Driver/chapter9/lab2/lab1_driver.o
+  CC [M]  /media/mafn/Driver/chapter9/lab2/lab1_honk_driver.o
+  CC [M]  /media/mafn/Driver/chapter9/lab2/lab1_honk_driver0.o
+  Building modules, stage 2.
+  MODPOST 3 modules
+WARNING: /media/mafn/Driver/chapter9/lab2/lab1_honk_driver0: 'HONK' exported twice. Previous export was in /media/mafn/Driver/chapter9/lab2/lab1_honk_driver.ko
+  CC      /media/mafn/Driver/chapter9/lab2/lab1_driver.mod.o
+  LD [M]  /media/mafn/Driver/chapter9/lab2/lab1_driver.ko
+  CC      /media/mafn/Driver/chapter9/lab2/lab1_honk_driver.mod.o
+  LD [M]  /media/mafn/Driver/chapter9/lab2/lab1_honk_driver.ko
+  CC      /media/mafn/Driver/chapter9/lab2/lab1_honk_driver0.mod.o
+  LD [M]  /media/mafn/Driver/chapter9/lab2/lab1_honk_driver0.ko
+make[1]: Leaving directory `/usr/src/linux-headers-3.19.0-32-generic'
+```
+
+Loading both honk modules at the same time yielded the following:  
+
+dmesg:  
+```
+[22908.172992] lab1_honk_driver0: exports duplicate symbol HONK (owned by lab1_honk_driver)
+```
+
+terminal:  
+```
+mafn@0xFF /media/mafn/Driver/chapter9/lab2 $ sudo insmod lab1_honk_driver0.ko
+insmod: ERROR: could not insert module lab1_honk_driver0.ko: Invalid module format
+```
+
+Next up was installing the modules with make_install. Since my Makefile doesn't
+automatically invoke the kernel makefile, I had to add another rule:
+```
+modules_install:
+	$(KMAKE) modules_install
+```
+
+```
+mafn@0xFF /media/mafn/Driver/chapter9/lab2 $ sudo make modules_install
+/usr/bin/make -C /lib/modules/3.19.0-32-generic/build M=/media/mafn/Driver/chapter9/lab2 modules_install
+make[1]: Entering directory `/usr/src/linux-headers-3.19.0-32-generic'
+  INSTALL /media/mafn/Driver/chapter9/lab2/lab1_driver.ko
+Can't read private key
+  INSTALL /media/mafn/Driver/chapter9/lab2/lab1_honk_driver.ko
+Can't read private key
+  INSTALL /media/mafn/Driver/chapter9/lab2/lab1_honk_driver0.ko
+Can't read private key
+  DEPMOD  3.19.0-32-generic
+make[1]: Leaving directory `/usr/src/linux-headers-3.19.0-32-generic'
+```
+
+I looked up what the private key stuff meant, but this apparently was not an issue.
+
+I tried to figure out where it placed my kernel modules, but I couldn't find out
+manually. So I went to my `/lib/modules/uname -r/` folder and did the following:
+```
+mafn@0xFF /lib/modules/3.19.0-32-generic $ find . -type f -name "lab1_driver.ko"
+./extra/lab1_driver.ko
+```
+
+We can conclude that it places user made modules in the extra folder.
+
+Next up was generating a modules.dep with `depmod`. `depmod -a`.
+
+Doing a grep on the newly generated modules.dep revealed that my lab1 module was now added.
