@@ -394,3 +394,28 @@ seemed to work pretty well:
 
 I would assume that the flag mismatches are because the interrupts don't want
 to be shared.
+
+## Chapter 9
+### Lab 1
+This time I had to write a kernel module which uses a function of another kernel
+module. So I wrote 2 modules:
+* lab1_driver
+* lab1_honk_driver
+
+The honk driver has a function `HONK` which prints "HONK HONK" in the kernel log.
+The other driver has the declaration `extern void HONK(void)` so that it can
+attempt to use this honk function in its init.
+
+Upon trying to load the main driver, the following came up: `[20713.980271] lab1_driver: Unknown symbol HONK (err 0)`
+This was because the honk_driver wasn't loaded. after loading the honk module,
+the following happened upon loading the main driver.
+
+```
+[20730.654395] honk_driver is initialising
+[20730.654400] honk_driver is initialised
+[20734.181859] lab1_driver is initialising
+[20734.181864] HONK HONK from the honk module
+[20734.181865] lab1_driver is initialised
+```
+
+Sources can be found in `chapter9/lab1`.
