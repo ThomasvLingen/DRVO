@@ -677,3 +677,32 @@ new userspace data: !!!!!!!!!
 
 The reason we see 4 and 9 characters sent and recieved is because C automatically
 null terminates string constants.
+
+### Lab 3
+Next up was writing the signal sending program. Both the driver and userspace
+application were pretty straightforward.
+
+To test this I first tried to let the userspace program kill itself.
+The output was as follows:
+
+```
+mafn@0xFF /media/mafn/Driver/chapter13/lab3 $ sudo ./lab3_userspace
+[0] Performed ioctl for process_id
+[0] Performed ioctl for setting signal
+```
+
+We can see that it has succeeded because it doesn't print out its final message.
+
+Next up I tried having it close a process going on in another terminal (htop),
+which I found out had pid 29154. 15 is SIGTERM, the friendly way of telling the
+program to shut down:
+
+```
+mafn@0xFF /media/mafn/Driver/chapter13/lab3 $ sudo ./lab3_userspace 29154 15
+[0] Performed ioctl for process_id
+[0] Performed ioctl for setting signal
+[0] Performed ioctl for sending signal
+```
+
+In my other terminal, I saw htop closing down immediatly.
+Seems like we were successful.
