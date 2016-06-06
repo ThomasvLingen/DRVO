@@ -488,3 +488,74 @@ We can conclude that it places user made modules in the extra folder.
 Next up was generating a modules.dep with `depmod`. `depmod -a`.
 
 Doing a grep on the newly generated modules.dep revealed that my lab1 module was now added.
+
+## Chapter 10
+### Lab 1
+I decided to put a kprobe in my driver, pointing to a function within my driver.
+The kprobe was placed successfully, but for some reason the pre_handler never
+got called.
+
+I therefore tried placing the kprobe on a name of what the book suggested
+"do_fork" instead. This seemed to work nicely, since as soon as the kprobe
+was placed, this is what I saw in my `dmesg`.
+
+```
+[  210.511808] Hello from kprobe
+[  210.511827] Hello from kprobe
+[  210.532217] Hello from kprobe
+[  210.532236] Hello from kprobe
+[  210.533047] Hello from kprobe
+[  210.533054] Hello from kprobe
+[  210.550969] Hello from kprobe
+[  210.550983] Hello from kprobe
+```
+
+Apparently do_fork is called **a lot**.
+
+### Lab 2
+I decided to use a jprobe on my own function this time. I therefore took the old
+honk module (which exports a `HONK` function!) and insmodded it. I learned on
+the internet that you can do `cat /proc/kallsyms` to find out all linux kernel
+symbols. Upon doing `cat /proc/kallsyms | grep "HONK"` I could confirm that HONK
+was a symbol.
+
+My jprobe now looked like this:
+```
+static void honk_interceptor(void)
+{
+    times_called++;
+
+    jprobe_return();
+}
+
+/* JPROBE */
+static struct jprobe honk_probe = {
+    .entry = honk_interceptor,
+    .kp = {
+        .symbol_name = "HONK"
+    }
+};
+```
+
+I made a HONK call in the driver's open entry point, so I could invoke HONK,
+and made my driver print the amount of HONK calls upon exit. The result looked
+good.
+
+```
+[ 2088.469737] lab2_driver is initialising
+[ 2088.493174] lab2_driver is initialised
+[ 2102.575824] lab2_driver is opening!
+[ 2102.575842] HONK HONK from the honk module
+[ 2102.576189] lab2_driver is closing!
+[ 2107.801007] lab2_driver is opening!
+[ 2107.801016] HONK HONK from the honk module
+[ 2107.801349] lab2_driver is closing!
+[ 2120.627770] lab2_driver is exiting
+[ 2120.627784] Amount of HONK calls 2
+[ 2120.629866] lab2_driver has exited
+```
+
+As we can see the amount of HONK calls corresponds to how many times the HONK
+function was called.
+
+### Lab 3
