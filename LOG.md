@@ -646,3 +646,34 @@ mafn@0xFF /media/mafn/Driver/chapter13/lab1 $
 ```
 
 ### Lab 2
+Next up was making the size of the transmission not a fixed size. I made the
+driver write size * '!' upon a read. And to make it simply printk the contents
+of a write.
+
+I seemed to get this right the first time around, with this corresponding output.  
+
+dmesg:
+```
+[19372.046149] lab2_driver is initialising
+[19372.048153] lab2_driver is initialised
+[19383.020751] lab2_driver is opening!
+[19383.020760] lab2_driver ioctl: read - sending 5 bytes
+[19383.020959] lab2_driver ioctl: read - sending 10 bytes
+[19383.021067] lab2_driver ioctl: write - recieved 5 bytes - abcd
+[19383.021122] lab2_driver ioctl: write - recieved 10 bytes - abcdefghi
+[19383.021179] lab2_driver is closing!
+```  
+
+program:
+```
+mafn@0xFF /media/mafn/Driver/chapter13/lab2 $ sudo ./lab2_userspace
+[0] Performed ioctl
+new userspace data: !!!!
+[0] Performed ioctl
+new userspace data: !!!!!!!!!
+[0] Performed ioctl
+[0] Performed ioctl
+```
+
+The reason we see 4 and 9 characters sent and recieved is because C automatically
+null terminates string constants.
