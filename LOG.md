@@ -618,3 +618,31 @@ Reboot...
 
 Even after fiddling around, I couldn't manage to write a string to a debugfs file.
 unsigned ints worked fine though, and the debugfs dir I made now removed itself properly.
+
+## Chapter 13
+### Lab1
+I made an ioctl driver and accompanying userspace program. However, the driver
+would report that the size was wrong, when I clearly told it to read 1 byte.
+Turns out that the size parameter expects a **type** and not an actual size.
+The parameter later gets sizeof'd
+
+After testing, both of these seemed to work rather well. Here are the results.
+
+What the userspace program does is:  
+read the driver's data (should be '-')  
+write '!' to the driver
+
+```
+mafn@0xFF /media/mafn/Driver/chapter13/lab1 $ make insert
+sudo insmod lab1_driver.ko
+mafn@0xFF /media/mafn/Driver/chapter13/lab1 $ sudo ./lab1_userspace
+[0] Performed ioctl
+new userspace data: -
+[0] Performed ioctl
+new userspace data: !
+mafn@0xFF /media/mafn/Driver/chapter13/lab1 $ make remove
+sudo rmmod lab1_driver
+mafn@0xFF /media/mafn/Driver/chapter13/lab1 $
+```
+
+### Lab 2
