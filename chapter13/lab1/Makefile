@@ -24,6 +24,7 @@ remove:
 
 clean:
 	$(KMAKE) clean
+	rm -rf $(USERSPACE_OUT)
 
 #command definitions
 .PHONY: all clean insert remove userspace_program
