@@ -559,3 +559,62 @@ As we can see the amount of HONK calls corresponds to how many times the HONK
 function was called.
 
 ### Lab 3
+Turns out that only here I would have to take my own driver and jprobe it. But
+I already did this in Lab 2 instead...
+
+### Lab 4
+Debugfs was already mounted, so no need to go through that. `mount | grep "debugfs"`.  
+However to get into the debugfs, mounted at /sys/kernel/debug, I had to be root
+I couldn't sudo cd into it since cd is not an actual program. So I did `su` instead.
+
+I made my driver setup a debugfs which looks like this:
+
+```c
+/* DEBUGFS */
+static void init_debugfs(void)
+{
+    debugfs_dir = debugfs_create_dir(DRIVER_NAME, NULL);
+    if (!debugfs_dir) {
+        printk("Could not create debugfs_dir\n");
+    }
+
+    debugfs_string = debugfs_create_file("test_string", 0644, debugfs_dir, &some_string, NULL);
+    if (!debugfs_string) {
+        printk("Could not create debugfs_string\n");
+    }
+
+    debugfs_times_opened = debugfs_create_u32("times_opened", 0644, debugfs_dir, &times_opened);
+    if (!debugfs_times_opened) {
+        printk("Could not create debugfs_times_opened\n");
+    }
+}
+
+static void free_debugfs(void)
+{
+    debugfs_remove(debugfs_dir);
+    debugfs_remove(debugfs_string);
+    debugfs_remove(debugfs_times_opened);
+}
+```
+
+This seemed to work nicely, except for the test_string:
+```
+0xFF debug # cd lab3_driver/
+0xFF lab3_driver # ls
+test_string  times_opened
+0xFF lab3_driver # cat test_string
+0xFF lab3_driver # vi test_string
+0xFF lab3_driver # cat times_opened
+0
+0xFF lab3_driver # cat times_opened
+3
+```
+
+It also seemed that the directory was not removed. This was most likely because
+I tried to remove the directory **before** removing its contents, which resulted in
+the directory failing to remove itself. I tried to remove the directory myself
+as root, but then discovered that I couldn't. Which makes sense since this is kernel space!  
+Reboot...
+
+Even after fiddling around, I couldn't manage to write a string to a debugfs file.
+unsigned ints worked fine though, and the debugfs dir I made now removed itself properly.
